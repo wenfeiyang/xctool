@@ -183,4 +183,9 @@ static const NSString * kOtestShimStderrFilePath __unused = @"OTEST_SHIM_STDERR_
   return installed;
 }
 
++ (void)cleanSimulator:(SimulatorInfo *)simulatorInfo
+{
+  [[self classBasedOnCurrentVersionOfXcode] cleanSimulator:simulatorInfo];
+}
+
 @end

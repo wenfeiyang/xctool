@@ -8,6 +8,8 @@ typedef void (^CDUnknownBlockType)(void);
 
 @class SimDeviceNotificationManager, SimDeviceSet, SimDeviceType, SimRuntimeStub, SimServiceConnectionManager;
 
+typedef void (^CDUnknownBlockType)(void); // return type and parameters are unknown
+
 typedef NS_ENUM(long long, SimDeviceState) {
   SimDeviceStateCreating = 0,
   SimDeviceStateShutdown = 1,

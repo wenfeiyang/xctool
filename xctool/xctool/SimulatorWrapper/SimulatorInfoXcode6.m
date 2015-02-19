@@ -38,6 +38,31 @@ static const NSInteger KProductTypeIpad = 2;
   NSArray *sorted = [[SimRuntimeStub supportedRuntimes] sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"version" ascending:YES]]];
   return [sorted lastObject];
 }
+@end
+
+@interface SimDeviceSet (xctool)
++ (SimDeviceSet *)xctoolDefaultSet;
+@end
+
+@implementation SimDeviceSet (xctool)
++ (SimDeviceSet *)xctoolDefaultSet
+{
+  static dispatch_once_t onceToken;
+  static SimDeviceSet *defaultSet;
+  dispatch_once(&onceToken, ^{
+    NSString *path = [TemporaryDirectoryForAction() stringByAppendingPathComponent:@"SimDevices"];
+    [[NSFileManager defaultManager] createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+    defaultSet = [SimDeviceSet setForSetPath:path];
+    [defaultSet updateDefaultDevices];
+  });
+  return defaultSet;
+}
+@end
+
+@interface SimulatorInfoXcode6 ()
+
+@property (nonatomic, strong) SimDevice *simulatedDevice;
+@property (nonatomic, strong) SimRuntime *simulatedRuntime;
 
 @end
 
@@ -51,6 +76,14 @@ static const NSInteger KProductTypeIpad = 2;
 @synthesize cpuType = _cpuType;
 @synthesize deviceName = _deviceName;
 @synthesize OSVersion = _OSVersion;
+
++ (void)initialize
+{
+  time_t seconds;
+  time(&seconds);
+
+  srand((unsigned int) seconds);
+}
 
 - (void)dealloc
 {
@@ -177,12 +210,22 @@ static const NSInteger KProductTypeIpad = 2;
     SimRuntimeStub *runtime = [self simulatedRuntime];
     SimDeviceTypeStub *deviceType = [SimDeviceTypeStub supportedDeviceTypesByAlias][[self simulatedDeviceInfoName]];
     NSAssert(deviceType != nil, @"Unable to find SimDeviceTypeStub for the device with name \"%@\". Available device names: %@", [self simulatedDeviceInfoName], [[SimDeviceTypeStub supportedDeviceTypesByAlias] allKeys]);
-    for (SimDevice *device in [[SimDeviceSetStub defaultSet] availableDevices]) {
+    for (SimDevice *device in [[SimDeviceSetStub xctoolDefaultSet] availableDevices]) {
       if ([device.deviceType isEqual:deviceType] &&
           [device.runtime isEqual:runtime]) {
         _simulatedDevice = device;
         break;
       }
+    }
+
+    if (!_simulatedDevice) {
+      NSError *error = nil;
+      SimDevice *simDevice = [[SimDeviceSetStub xctoolDefaultSet] createDeviceWithType:deviceType
+                                                                               runtime:runtime
+                                                                                  name:@"xctool"
+                                                                                 error:&error];
+      NSAssert(simDevice, @"Failed to create xctool SimDevice with device type %@, runtime %@ with error: %@", deviceType, runtime, error);
+      _simulatedDevice = simDevice;
     }
 
     NSAssert(_simulatedDevice != nil, @"Simulator with name \"%@\" doesn't have configuration with sdk version \"%@\". Available configurations: %@.", [self simulatedDeviceInfoName], runtime.versionString, [SimulatorInfoXcode6 _availableDeviceConfigurationsInHumanReadableFormat]);

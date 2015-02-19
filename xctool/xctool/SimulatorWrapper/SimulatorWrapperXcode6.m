@@ -58,11 +58,7 @@
     return NO;
   }
   
-  if ([simInfo simulatedDevice].state == SimDeviceStateBooted) {
-    return YES;
-  }
-
-  DTiPhoneSimulatorApplicationSpecifier *appSpec = [DTiPhoneSimulatorApplicationSpecifier specifierWithApplicationBundleIdentifier:@"com.apple.unknown"];
+  DTiPhoneSimulatorApplicationSpecifier *appSpec = [DTiPhoneSimulatorApplicationSpecifier specifierWithApplicationBundleIdentifier:@"com.apple.backboardd"];
   DTiPhoneSimulatorSystemRoot *systemRoot = [simInfo systemRootForSimulatedSdk];
 
   DTiPhoneSimulatorSessionConfig *sessionConfig = [[[DTiPhoneSimulatorSessionConfig alloc] init] autorelease];
@@ -150,6 +146,19 @@
 
   }
   return installed;
+}
+
++ (void)cleanSimulator:(SimulatorInfoXcode6 *)simulatorInfo
+{
+  SimDevice *device = [simulatorInfo simulatedDevice];
+  SimDeviceSet *deviceSet = device.deviceSet;
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+    [device eraseContentsAndSettingsAsyncWithCompletionHandler:^{
+      [device shutdownAsyncWithCompletionHandler:^{
+        [deviceSet deleteDeviceAsync:device completionHandler:nil];
+      }];
+    }];
+  });
 }
 
 @end

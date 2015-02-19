@@ -92,4 +92,9 @@
   return installed;
 }
 
++ (void)cleanSimulator:(SimulatorInfo *)simulatorInfo
+{
+  // nothing to do here
+}
+
 @end

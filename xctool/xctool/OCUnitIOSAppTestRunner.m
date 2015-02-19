@@ -245,6 +245,8 @@ static const NSInteger kMaxRunTestsAttempts = 3;
     // Restarting simulator
     prepareSimulator(YES, NO);
   }
+
+  [SimulatorWrapper cleanSimulator:self.simulatorInfo];
 }
 
 @end

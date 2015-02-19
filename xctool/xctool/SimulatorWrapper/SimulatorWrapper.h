@@ -50,4 +50,6 @@
                       reporters:(NSArray *)reporters
                           error:(NSString **)error;
 
++ (void)cleanSimulator:(SimulatorInfo *)simulatorInfo;
+
 @end
