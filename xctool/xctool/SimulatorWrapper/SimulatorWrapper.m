@@ -119,6 +119,8 @@ static const NSString * kOtestShimStderrFilePath __unused = @"OTEST_SHIM_STDERR_
   BOOL simStartedSuccessfully = [launcher launchAndWaitForExit];
   if (!simStartedSuccessfully && error) {
     *error = launcher.launchError;
+  } else if (error) {
+    *error = launcher.didEndWithError;
   }
 
   [reader stopReading];

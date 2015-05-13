@@ -216,6 +216,11 @@ static const NSInteger kMaxRunTestsAttempts = 3;
                                                       error:&error];
 
     if (infraSucceeded) {
+      if (error) {
+        ReportStatusMessage(_reporters,
+                            REPORTER_MESSAGE_WARNING,
+                            @"Simulator session did end with error: %@.", error);
+      }
       break;
     }
 
