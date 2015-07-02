@@ -219,6 +219,12 @@ NSString *MakeTemporaryDirectory(NSString *nameTemplate);
 BOOL TestableSettingsIndicatesApplicationTest(NSDictionary *settings);
 
 /**
+ * Returns YES if the build settings indicate this is a UI Testing test bundle.
+ * i.e. PRODUCT_TYPE equals to "com.apple.product-type.bundle.ui-testing".
+ */
+BOOL TestableSettingsIndicatesUITesting(NSDictionary *settings);
+
+/**
  * Returns path to the latest xcodebuild crash report or nil.
  */
 NSString *LatestXcodebuildCrashReportPath();

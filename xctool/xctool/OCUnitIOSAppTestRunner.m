@@ -160,6 +160,20 @@ static const NSInteger kMaxRunTestsAttempts = 3;
                                              error:startupError]) {
       return NO;
     }
+
+    // To run UI Testing we need to install the app that contains test bundle
+    // and XCTRunner
+    if (TestableSettingsIndicatesUITesting(_simulatorInfo.buildSettings)) {
+      NSString *testHostHelperBundleID = _simulatorInfo.buildSettings[UITestingTargetApplicationBundleID];
+      NSString *testHostHelperAppPath = _simulatorInfo.buildSettings[UITestingTargetApplicationPath];
+      if (![SimulatorWrapper installTestHostBundleID:testHostHelperBundleID
+                                      fromBundlePath:testHostHelperAppPath
+                                       simulatorInfo:_simulatorInfo
+                                           reporters:_reporters
+                                               error:startupError]) {
+        return NO;
+      }
+    }
     return YES;
   };
 
@@ -204,7 +218,15 @@ static const NSInteger kMaxRunTestsAttempts = 3;
   NSArray *appLaunchArgs = nil;
   NSMutableDictionary *appLaunchEnvironment = [_simulatorInfo simulatorLaunchEnvironment];
   if (ToolchainIsXcode7OrBetter()) {
-    appLaunchArgs = [self commonTestArguments];
+    NSMutableArray *mutableArgs = [self commonTestArguments];
+//    if (TestableSettingsIndicatesUITesting(_simulatorInfo.buildSettings)) {
+//      NSString *pathToXCTRunner = [[NSString pathWithComponents:@[
+//        _simulatorInfo.buildSettings[Xcode_TARGET_BUILD_DIR],
+//        @"../XCTRunner"
+//      ]] stringByStandardizingPath];
+//      [mutableArgs insertObject:pathToXCTRunner atIndex:0];
+//    }
+    appLaunchArgs = mutableArgs;
 
     [appLaunchEnvironment addEntriesFromDictionary:[self testEnvironmentWithSpecifiedTestConfiguration]];
   } else {

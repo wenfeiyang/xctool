@@ -694,6 +694,31 @@ typedef BOOL (^TestableBlock)(NSArray *reporters);
                              xcodeArguments:xcodebuildArguments
                                     testSDK:_testSDK
                                       error:&buildSettingsError];
+        if (TestableSettingsIndicatesUITesting(testableBuildSettings)) {
+          NSString *testTargetName = testableBuildSettings[Xcode_TEST_TARGET_NAME];
+          NSAssert(testTargetName, @"Test target name should be defined for UI testing test target in build settings: %@", testableBuildSettings);
+          NSDictionary *testTargetSettings = [TestableExecutionInfo
+            testableBuildSettingsForProject:testable.projectPath
+                                     target:testTargetName
+                                    objRoot:xcodeSubjectInfo.objRoot
+                                    symRoot:xcodeSubjectInfo.symRoot
+                          sharedPrecompsDir:xcodeSubjectInfo.sharedPrecompsDir
+                       targetedDeviceFamily:xcodeSubjectInfo.targetedDeviceFamily
+                             xcodeArguments:xcodebuildArguments
+                                    testSDK:_testSDK
+                                      error:&buildSettingsError];
+          NSMutableDictionary *extendedBuildSettings = [testableBuildSettings mutableCopy];
+          extendedBuildSettings[Xcode_TEST_HOST] = [[NSString pathWithComponents:@[
+            testableBuildSettings[Xcode_TARGET_BUILD_DIR],
+            @"../XCTRunner",
+          ]] stringByStandardizingPath];
+          extendedBuildSettings[UITestingTargetApplicationBundleID] = testTargetSettings[Xcode_PRODUCT_BUNDLE_IDENTIFIER];
+          extendedBuildSettings[UITestingTargetApplicationPath] = [NSString pathWithComponents:@[
+            testTargetSettings[Xcode_TARGET_BUILD_DIR],
+            testTargetSettings[Xcode_FULL_PRODUCT_NAME],
+          ]];
+          testableBuildSettings = extendedBuildSettings;
+        }
       }
       TestableExecutionInfo *info;
       if (testableBuildSettings) {

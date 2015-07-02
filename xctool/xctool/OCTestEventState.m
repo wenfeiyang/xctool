@@ -74,7 +74,7 @@
 
 - (void)stateBeginTest
 {
-  NSAssert(!_isStarted, @"Test should not have started yet.");
+//  NSAssert(!_isStarted, @"Test should not have started yet.");
   _isStarted = true;
   _beginTime = CACurrentMediaTime();
 }
